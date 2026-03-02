@@ -1,11 +1,293 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Сім'я Фантомів</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Door Lock - Cyber Presentation</title>
+    <style>
+        :root {
+            --primary: #00ffcc;
+            --accent: #ff3366;
+            --bg: #05080a;
+            --card-bg: rgba(22, 30, 45, 0.92);
+            --text: #e2e8f0;
+        }
 
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+        }
+
+        #canvas-bg {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: -1;
+            opacity: 0.25;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+            position: relative;
+            z-index: 1;
+        }
+
+        h1 {
+            color: var(--primary);
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            font-size: 2.2rem;
+            text-shadow: 0 0 20px var(--primary);
+            animation: pulse 2s infinite;
+            margin-bottom: 50px;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.8; }
+            50% { opacity: 1; text-shadow: 0 0 30px var(--primary); }
+            100% { opacity: 0.8; }
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 700px) { .grid { grid-template-columns: 1fr; } }
+
+        .card {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 20px;
+            border: 1px solid rgba(0, 255, 204, 0.2);
+            backdrop-filter: blur(12px);
+            transition: all 0.4s ease;
+        }
+
+        .card:hover {
+            border-color: var(--primary);
+            box-shadow: 0 0 30px rgba(0, 255, 204, 0.2);
+            transform: translateY(-5px);
+        }
+
+        h3 { color: var(--primary); font-size: 1.4rem; margin-top: 0; border-bottom: 1px solid #334155; padding-bottom: 10px; }
+
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 20px;
+            background: transparent;
+            border-radius: 15px;
+            font-weight: 900;
+            font-size: 1.1rem;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: 0.3s;
+        }
+
+        .btn-essence {
+            border: 2px solid #9d4edd;
+            color: #9d4edd;
+        }
+
+        .btn-essence:hover {
+            background: #9d4edd;
+            color: #fff;
+            box-shadow: 0 0 40px #9d4edd;
+        }
+
+        .btn-code {
+            border: 2px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-code:hover {
+            background: var(--primary);
+            color: #000;
+            box-shadow: 0 0 40px var(--primary);
+        }
+
+        /* Модальне вікно */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.98);
+            z-index: 1000;
+            padding: 20px;
+            box-sizing: border-box;
+            overflow-y: auto;
+        }
+
+        .modal-content {
+            max-width: 1000px;
+            margin: 50px auto;
+            position: relative;
+            background: #011627;
+            padding: 40px;
+            border-radius: 20px;
+            border: 1px solid var(--primary);
+            color: #d6deeb;
+        }
+
+        .close-btn {
+            position: absolute;
+            right: 20px; top: 10px;
+            color: var(--primary);
+            font-size: 40px;
+            cursor: pointer;
+        }
+
+        pre {
+            background: #010b14;
+            padding: 15px;
+            border-radius: 10px;
+            overflow-x: auto;
+            color: #82aaff;
+        }
+        
+        .essence-text {
+            font-size: 1.2rem;
+            line-height: 1.8;
+            color: #e2e8f0;
+        }
+
+        .c-keyword { color: #c792ea; }
+        .c-func { color: #82aaff; }
+        .c-str { color: #ecc48d; }
+    </style>
+</head>
+<body>
+
+<canvas id="canvas-bg"></canvas>
+
+<div class="container">
+    <h1>🔐 SMART DOOR SYSTEM</h1>
+    
+    <div class="grid">
+        <div class="card">
+            <h3>⚙️ Апаратура</h3>
+            <ul style="list-style: '⚡ '; padding-left: 20px;">
+                <li>Arduino Uno</li>
+                <li>Клавіатура 4x4</li>
+                <li>Сервопривід</li>
+                <li>LCD 1602</li>
+                <li>Buzzer + LED</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h3>🛡️ Безпека</h3>
+            <p><b>Зелений:</b> Двері відчинено.</p>
+            <p><b>Червоний:</b> Код невірний.</p>
+            <p><b>Сирена:</b> Блокування після двох спроб.</p>
+        </div>
+    </div>
+
+    <div class="button-group">
+        <button class="btn btn-essence" onclick="openEssence()">💡 Суть проєкту</button>
+            </div>
+</div>
+
+<!-- Модальне вікно Суть проєкту -->
+<div id="essenceModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeModal('essenceModal')">&times;</span>
+        <h2 style="color: #9d4edd;">💡 Концепція проєкту</h2>
+        <div class="essence-text">
+            <p>Я хочу створити <b>електричні двері з кодовим замком</b>. Основна ідея полягає в тому, щоб користувач міг вводити секретний код за допомогою клавіатури (калькулятора).</p>
+            <p><b>Як це працює:</b></p>
+            <ul>
+                <li>Коли вводиться правильний код — спрацьовує <b>сервопривід</b> (відкриває замок) і загоряється <b>зелений світлодіод</b>.</li>
+                <li>Якщо код введено неправильно — загоряється <b>червоний світлодіод</b>.</li>
+                <li>Якщо користувач помилився <b>два рази</b> поспіль — вмикається гучна <b>звукова сигналізація</b> (пищалка), яка попереджає про спробу зламу.</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- Модальне вікно Код -->
+<div id="codeModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeModal('codeModal')">&times;</span>
+        <h2 style="color: var(--primary);">Код для Arduino (C++)</h2>
+        <pre><code><span class="c-keyword">#include</span> &lt;Keypad.h&gt;
+<span class="c-keyword">#include</span> &lt;Servo.h&gt;
+<span class="c-keyword">#include</span> &lt;Wire.h&gt;
+<span class="c-keyword">#include</span> &lt;LiquidCrystal_I2C.h&gt;
+
+<span class="c-comment">// ... (твій повний код)</span>
+<span class="c-keyword">void</span> <span class="c-func">loop</span>() {
+  <span class="c-keyword">char</span> key = keypad.<span class="c-func">getKey</span>();
+  <span class="c-keyword">if</span> (key) {
+    <span class="c-comment">// Логіка перевірки коду</span>
+    <span class="c-keyword">if</span> (inputCode == correctCode) {
+      openDoor(); <span class="c-comment">// Зелений світ + Серво</span>
+    } <span class="c-keyword">else</span> {
+      <span class="c-comment">// Червоний світ + Сирена після 2 спроб</span>
+    }
+  }
+}</code></pre>
+    </div>
+</div>
+
+<script>
+    // Матриця
+    const canvas = document.getElementById('canvas-bg');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    const characters = '01'; 
+    const fontSize = 16;
+    const columns = canvas.width / fontSize;
+    const drops = [];
+    for (let x = 0; x < columns; x++) drops[x] = 1;
+
+    function drawMatrix() {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#0f0';
+        ctx.font = fontSize + 'px monospace';
+        for (let i = 0; i < drops.length; i++) {
+            const text = characters.charAt(Math.floor(Math.random() * characters.length));
+            ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+            if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+            drops[i]++;
+        }
+    }
+    setInterval(drawMatrix, 50);
+
+    // Модальні вікна
+    function openEssence() { document.getElementById('essenceModal').style.display = "block"; }
+    function openCode() { document.getElementById('codeModal').style.display = "block"; }
+    function closeModal(id) { document.getElementById(id).style.display = "none"; }
+    
+    window.onclick = function(event) {
+        if (event.target.className === 'modal') {
+            event.target.style.display = "none";
+        }
+    }
+</script>
 
 </body>
 </html>
